@@ -1,94 +1,82 @@
-import 'package:flutter/material.dart';
-import '../banco de dados/usuario.dart';
 
-class telaHome extends StatelessWidget {
-  const telaHome({super.key});
+import 'package:flutter/material.dart';
+import '../model/usuario.dart';
+
+class TelaHome extends StatelessWidget {
+  const TelaHome({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-      ),
+      appBar: AppBar(title: const Text('AgendaApp')),
 
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
 
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.calendar_month, size: 90, color: Colors.red),
+              const Icon(
+                Icons.calendar_month,
+                color: Colors.red,
+                size: 90,
+              ),
 
-              const Text('Bem-vindo à Agenda App',
-                style: TextStyle(fontSize: 24),
+              Text(
+                'Bem-vindo, ${Usuario.logado?.nome ?? 'usuário'}!',
+                style: const TextStyle(fontSize: 22),
                 textAlign: TextAlign.center,
               ),
 
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
 
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/adicionarAgenda');
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text(
-                    'Adicionar na Agenda',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/adicionar');
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Cadastrar compromisso'),
               ),
 
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/visualizarAgenda');
-                  },
-                  icon: const Icon(Icons.visibility),
-                  label: const Text(
-                    'Ver Agenda',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/lista');
+                },
+                icon: const Icon(Icons.list),
+                label: const Text('Listar compromissos'),
               ),
 
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/alterarCadastro');
-                  },
-                  icon: const Icon(Icons.manage_accounts),
-                  label: const Text(
-                    'Alterar cadastro',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/busca');
+                },
+                icon: const Icon(Icons.search),
+                label: const Text('Consultar por ID'),
               ),
 
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/alterarCadastro');
+                },
+                icon: const Icon(Icons.manage_accounts),
+                label: const Text('Alterar cadastro'),
+              ),
 
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Usuario.logout();
-                    Navigator.pushReplacementNamed(context, '/login');
-                  },
-                  icon: const Icon(Icons.logout),
-                  label: const Text('Logout', style: TextStyle(fontSize: 18)),
-                ),
+              const SizedBox(height: 20),
+
+              OutlinedButton.icon(
+                onPressed: () {
+                  Usuario.sair();
+
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/login',
+                    (route) => false,
+                  );
+                },
+                icon: const Icon(Icons.logout),
+                label: const Text('Sair'),
               ),
             ],
           ),

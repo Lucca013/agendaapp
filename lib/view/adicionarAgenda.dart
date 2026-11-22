@@ -1,123 +1,96 @@
 import 'package:flutter/material.dart';
-import '../banco de dados/compromisso.dart';
-import '../utilitarios/formulario.dart';
+import '../utilitarios/bancoDados.dart';
+import '../model/usuario.dart';
+import '../model/compromisso.dart';
 
-class telaAdicionarAgenda extends StatefulWidget {
-  const telaAdicionarAgenda({super.key});
+class TelaAdicionar extends StatefulWidget {
+  const TelaAdicionar({super.key});
 
   @override
-  State<telaAdicionarAgenda> createState() => _telaAdicionarAgendaState();
+  State<TelaAdicionar> createState() => _TelaAdicionarState();
 }
 
-class _telaAdicionarAgendaState extends State<telaAdicionarAgenda> {
-  final _formKey = GlobalKey<FormState>();
+class _TelaAdicionarState extends State<TelaAdicionar> {
+  final form = GlobalKey<FormState>();
+  final titulo = TextEditingController();
+  final descricao = TextEditingController();
+  final data = TextEditingController();
 
-  final TextEditingController _tituloController = TextEditingController();
-  final TextEditingController _descricaoController = TextEditingController();
-  final TextEditingController _dataController = TextEditingController();
+  Future<void> salvar() async {
+    if (form.currentState!.validate()) {
+      try {
+        Compromisso compromisso = Compromisso(
+          usuarioId: Usuario.logado!.id!,
+          titulo: titulo.text,
+          descricao: descricao.text,
+          data: data.text,
+        );
+
+        await BancoDados.inserirCompromisso(compromisso);
+
+        if (!mounted) return;
+        Navigator.pop(context, true);
+
+      } catch (e) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao salvar: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Adicionar compromisso')),
+      appBar: AppBar(title: const Text('Novo compromisso')),
 
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
 
           child: Form(
-            key: _formKey,
+            key: form,
 
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.add_task, size: 80, color: Colors.red),
+                const Icon(Icons.add_task, color: Colors.red, size: 70),
 
-                Formulario.campoTexto(
-                  controller: _tituloController,
-                  label: 'Título',
-                  icone: Icons.title,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite o título do compromisso';
-                    }
-
-                    return null;
-                  },
-                ),
-                
-                const SizedBox(height: 24),
-                Formulario.campoTexto(
-                  controller: _descricaoController,
-                  label: 'Descrição',
-                  icone: Icons.description,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite a descrição do compromisso';
-                    }
-
-                    return null;
-                  },
+                TextFormField(
+                  controller: titulo,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Informe o título' : null,
                 ),
 
-                const SizedBox(height: 24),
-                Formulario.campoTexto(
-                  controller: _dataController,
-                  label: 'Data',
-                  icone: Icons.calendar_today,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite a data do compromisso';
-                    }
-
-                    return null;
-                  },
+                TextFormField(
+                  controller: descricao,
+                  decoration: const InputDecoration(labelText: 'Descrição'),
+                  maxLines: 2,
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Informe a descrição' : null,
                 ),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        Compromisso novoCompromisso = Compromisso(
-                          titulo: _tituloController.text,
-                          descricao: _descricaoController.text,
-                          data: _dataController.text,
-                        );
-
-                        Compromisso.adicionarCompromisso(novoCompromisso);
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Compromisso adicionado com sucesso!',
-                            ),
-                          ),
-                        );
-
-                        Navigator.pushReplacementNamed(
-                          context,
-                          '/visualizar-agenda',
-                        );
-                      }
-                    },
-                    icon: const Icon(Icons.save),
-                    label: const Text(
-                      'Salvar compromisso',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
+                TextFormField(
+                  controller: data,
+                  decoration: const InputDecoration(labelText: 'Data (DD/MM/AAAA)'),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Informe a data' : null,
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
+
+                FilledButton.icon(
+                  onPressed: salvar,
+                  icon: const Icon(Icons.save),
+                  label: const Text('Salvar compromisso'),
+                ),
 
                 TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/home');
-                  },
-                  child: const Text('Voltar para Home'),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Voltar'),
                 ),
               ],
             ),

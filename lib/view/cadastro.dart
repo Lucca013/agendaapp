@@ -1,124 +1,124 @@
 import 'package:flutter/material.dart';
-import '../banco de dados/usuario.dart';
-import '../utilitarios/formulario.dart';
+import '../utilitarios/bancoDados.dart';
+import '../model/usuario.dart';
 
-class telaCadastro extends StatefulWidget {
-  const telaCadastro({super.key});
+class TelaCadastro extends StatefulWidget {
+  const TelaCadastro({super.key});
 
   @override
-  State<telaCadastro> createState() => _telaCadastroState();
+  State<TelaCadastro> createState() => _TelaCadastroState();
 }
 
-class _telaCadastroState extends State<telaCadastro> {
-  final _formKey = GlobalKey<FormState>();
+class _TelaCadastroState extends State<TelaCadastro> {
+  final form = GlobalKey<FormState>();
+  final nome = TextEditingController();
+  final email = TextEditingController();
+  final senha = TextEditingController();
+  bool aceitaEmails = false;
 
-  final TextEditingController _nomeController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _senhaController = TextEditingController();
-  bool _aceitaReceberEmails = false;
-  
+  Future<void> cadastrar() async {
+    if (!form.currentState!.validate()) return;
+
+    Usuario usuario = Usuario(
+      nome: nome.text,
+      email: email.text.toLowerCase(),
+      aceitaEmails: aceitaEmails,
+    );
+
+    try {
+      Usuario? salvo = await BancoDados.inserirUsuario(
+        usuario,
+        senha.text,
+      );
+
+      if (!mounted) return;
+
+      if (salvo == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('E-mail já cadastrado.')),
+        );
+      } else {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao cadastrar: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cadastro')),
+      appBar: AppBar(title: const Text('Cadastro de usuário')),
 
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
 
           child: Form(
-            key: _formKey,
+            key: form,
 
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.person_add, size: 80, color: Colors.red),
-
-                Formulario.campoTexto(
-                  controller: _nomeController,
-                  label: 'Nome',
-                  icone: Icons.person,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite seu nome';
-                    }
-                    return null;
-                  },
+                const Icon(
+                  Icons.person_add,
+                  size: 70,
+                  color: Colors.red,
                 ),
 
-                const SizedBox(height: 24),
-                Formulario.campoTexto(
-                  controller: _emailController,
-                  label: 'E-mail',
-                  icone: Icons.email,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite seu e-mail';
-                    }
-                    return null;
-                  },
+                TextFormField(
+                  controller: nome,
+                  decoration: const InputDecoration(labelText: 'Nome'),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Informe seu nome' : null,
                 ),
 
-                const SizedBox(height: 24),
-                Formulario.campoTexto(
-                  controller: _senhaController,
-                  label: 'Senha',
-                  icone: Icons.lock,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite sua senha';
-                    }
-                    return null;
-                  },
+                TextFormField(
+                  controller: email,
+                  decoration: const InputDecoration(labelText: 'E-mail'),
+                  validator: (v) =>
+                      v == null || !v.contains('@')
+                          ? 'Informe um e-mail válido'
+                          : null,
                 ),
 
-                Formulario.campoCheckbox(
-                  valor: _aceitaReceberEmails,
-                  texto: 'Aceito receber e-mails sobre meus compromissos',
-                  onChanged: (value) {
+                TextFormField(
+                  controller: senha,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'Senha'),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Informe uma senha' : null,
+                ),
+
+                CheckboxListTile(
+                  value: aceitaEmails,
+                  title: const Text(
+                    'Aceito receber e-mails sobre meus compromissos',
+                  ),
+                  onChanged: (v) {
                     setState(() {
-                      _aceitaReceberEmails = value ?? false;
+                      aceitaEmails = v ?? false;
                     });
                   },
                 ),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
+                const SizedBox(height: 20),
 
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        Usuario novoUsuario = Usuario(
-                          nome: _nomeController.text,
-                          email: _emailController.text,
-                          senha: _senhaController.text,
-                          aceitaReceberEmails: _aceitaReceberEmails,
-                        );
-
-                        Usuario.cadastrar(novoUsuario);
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Usuário cadastrado com sucesso!'),
-                          ),
-                        );
-
-                        Navigator.pushReplacementNamed(context, '/login');
-                      }
-                    },
-                    child: const Text(
-                      'Cadastrar',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
+                FilledButton(
+                  onPressed: cadastrar,
+                  child: const Text('Cadastrar'),
                 ),
 
                 TextButton(
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, '/login');
                   },
-                  child: const Text('Já tenho uma conta'),
+                  child: const Text('Já tenho conta'),
                 ),
               ],
             ),

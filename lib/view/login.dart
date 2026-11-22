@@ -1,116 +1,114 @@
 import 'package:flutter/material.dart';
-import '../banco de dados/usuario.dart';
-import '../utilitarios/formulario.dart';
+import '../utilitarios/bancoDados.dart';
+import '../model/usuario.dart';
 
-class telaLogin extends StatefulWidget {
-  const telaLogin({super.key});
+class TelaLogin extends StatefulWidget {
+  const TelaLogin({super.key});
 
   @override
-  State<telaLogin> createState() => _telaLoginState();
+  State<TelaLogin> createState() => _TelaLoginState();
 }
 
-class _telaLoginState extends State<telaLogin> {
-  final _formKey = GlobalKey<FormState>();
+class _TelaLoginState extends State<TelaLogin> {
+  final form = GlobalKey<FormState>();
+  final email = TextEditingController();
+  final senha = TextEditingController();
 
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _senhaController = TextEditingController();
+  Future<void> entrar() async {
+    if (!form.currentState!.validate()) return;
+
+    try {
+      Usuario? usuario = await BancoDados.autenticar(
+        email.text,
+        senha.text,
+      );
+
+      if (!mounted) return;
+
+      if (usuario == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('E-mail ou senha incorretos.'),
+          ),
+        );
+      } else {
+        Usuario.logado = usuario;
+
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/home',
+          (route) => false,
+        );
+      }
+
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao entrar: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
+      appBar: AppBar(title: const Text('Login')),
 
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
 
           child: Form(
-            key: _formKey,
+            key: form,
 
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(
                   Icons.login,
-                  size: 80,
                   color: Colors.red,
+                  size: 70,
                 ),
 
-                const SizedBox(height: 24),
-                Formulario.campoTexto(
-                  controller: _emailController,
-                  label: 'E-mail',
-                  icone: Icons.email,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite seu e-mail';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 24),
-                Formulario.campoTexto(
-                  controller: _senhaController,
-                  label: 'Senha',
-                  icone: Icons.lock,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Digite sua senha';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        String email = _emailController.text;
-                        String senha = _senhaController.text;
-
-                      var usuarioEncontrado = Usuario.listaUsuarios.where((usuario) {
-                        return usuario.email == email && usuario.senha == senha;
-                      }).toList();
-
-                      if (usuarioEncontrado.isNotEmpty) {
-                        Usuario.usuarioLogado = usuarioEncontrado.first;
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Login realizado com sucesso!'),
-                          ),
-                        );
-
-                        Navigator.pushReplacementNamed(context, '/home');
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('E-mail ou senha incorretos.'),
-                          ),
-                        );
-                      }
-                    }
-                    },
-                    child: const Text(
-                      'Entrar',
-                      style: TextStyle(fontSize: 18),
-                    ),
+                TextFormField(
+                  controller: email,
+                  decoration: const InputDecoration(
+                    labelText: 'E-mail',
                   ),
+                  validator: (v) =>
+                      v == null || v.isEmpty
+                          ? 'Informe o e-mail'
+                          : null,
                 ),
 
-                const SizedBox(height: 24),
+                TextFormField(
+                  controller: senha,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Senha',
+                  ),
+                  validator: (v) =>
+                      v == null || v.isEmpty
+                          ? 'Informe a senha'
+                          : null,
+                ),
+
+                const SizedBox(height: 20),
+
+                FilledButton(
+                  onPressed: entrar,
+                  child: const Text('Entrar'),
+                ),
+
                 TextButton(
-                  onPressed: (){
-                      Navigator.pushReplacementNamed(context, '/cadastro');
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(
+                      context,
+                      '/cadastro',
+                    );
                   },
-                  child: const Text('Ainda não tenho uma conta'),
+                  child: const Text('Ainda não tenho conta'),
                 ),
               ],
             ),

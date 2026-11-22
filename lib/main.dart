@@ -1,9 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'view/home.dart';
 import 'view/login.dart';
 import 'view/cadastro.dart';
-import 'view/visualizarAgenda.dart';
 import 'view/adicionarAgenda.dart';
+import 'view/lista.dart';
+import 'view/busca.dart';
 import 'view/alterarCadastro.dart';
 
 void main() {
@@ -16,12 +18,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Agenda App',
+      title: 'AgendaApp',
       debugShowCheckedModeBanner: false,
 
       theme: ThemeData(
         useMaterial3: true,
-
         scaffoldBackgroundColor: Colors.white,
 
         appBarTheme: const AppBarTheme(
@@ -31,15 +32,16 @@ class MyApp extends StatelessWidget {
         ),
       ),
 
-      initialRoute: '/cadastro',
+      initialRoute: '/login',
 
       routes: {
-        '/home': (context) => const telaHome(),
-        '/login': (context) => const telaLogin(),
-        '/cadastro': (context) => const telaCadastro(),
-        '/visualizarAgenda': (context) => const telaAgenda(),
-        '/adicionarAgenda': (context) => const telaAdicionarAgenda(),
-        '/alterarCadastro': (context) => const telaAlterarCadastro(),
+        '/login': (context) => const TelaLogin(),
+        '/cadastro': (context) => const TelaCadastro(),
+        '/home': (context) => const TelaHome(),
+        '/adicionar': (context) => const TelaAdicionar(),
+        '/lista': (context) => const TelaLista(),
+        '/busca': (context) => const TelaBusca(),
+        '/alterarCadastro': (context) => const TelaAlterarCadastro(),
       },
     );
   }
